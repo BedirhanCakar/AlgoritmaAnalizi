@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <h4 class="mb-0">Yeni Kullanıcı Kaydı</h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
+                    <form asp-action="Register" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Kullanıcı Adı</label>
+                            <input type="text" name="KullaniciAdi" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Şifre</label>
+                            <input type="password" name="Sifre" class="form-control" required />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Rol Seçimi</label>
+                            <select name="Rol" class="form-select" required>
+                                <option value="Viewer">Gözetmen (Viewer)</option>
+                                <option value="Admin">Yönetici (Admin)</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">Kayıt Ol</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a asp-action="Login" class="text-decoration-none">Zaten hesabın var mı? Giriş Yap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

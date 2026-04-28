@@ -173,6 +173,34 @@ namespace ExamScheduler.Migrations
                     b.ToTable("IslemLoglari");
                 });
 
+            modelBuilder.Entity("ExamScheduler.Models.Entities.Kullanici", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("KullaniciAdi")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Rol")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Sifre")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Kullanicilar");
+                });
+
             modelBuilder.Entity("ExamScheduler.Models.Entities.Oturum", b =>
                 {
                     b.Property<int>("Id")

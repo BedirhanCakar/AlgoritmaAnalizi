@@ -9,20 +9,34 @@
                 <div class="card-header bg-dark text-white text-center py-3">
                     <h4 class="mb-0">Sınav Takvimi Sistemi</h4>
                 </div>
-                <div class="card-body text-center p-5">
-                    <h5 class="card-title mb-4">Hoş Geldiniz</h5>
-                    <p class="text-muted mb-4">Lütfen sisteme giriş yapmak istediğiniz rolü seçin. Bu simülasyon, projede istenen rol tabanlı güvenlik gereksinimini test etmek için tasarlanmıştır.</p>
+                <div class="card-body p-4">
+                    <h5 class="card-title text-center mb-4">Sisteme Giriş</h5>
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["Error"]</div>
+                    }
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["Success"]</div>
+                    }
                     
                     <form asp-action="Login" method="post">
-                        <div class="d-grid gap-3">
-                            <button type="submit" name="role" value="Admin" class="btn btn-outline-danger btn-lg">
-                                Yönetici Olarak Gir (App_Admin)
-                            </button>
-                            <button type="submit" name="role" value="Viewer" class="btn btn-outline-success btn-lg">
-                                Gözetmen Olarak Gir (App_Viewer)
-                            </button>
+                        <div class="mb-3">
+                            <label class="form-label">Kullanıcı Adı</label>
+                            <input type="text" name="KullaniciAdi" class="form-control" required />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Şifre</label>
+                            <input type="password" name="Sifre" class="form-control" required />
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-dark btn-lg">Giriş Yap</button>
                         </div>
                     </form>
+                    
+                    <div class="text-center mt-3">
+                        <a asp-action="Register" class="text-decoration-none">Hesabın yok mu? Kayıt Ol</a>
+                    </div>
                 </div>
             </div>
         </div>

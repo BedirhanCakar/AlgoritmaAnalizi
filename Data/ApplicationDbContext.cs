@@ -19,6 +19,7 @@ namespace ExamScheduler.Data
         public DbSet<SinavSalonu> SinavSalonlari { get; set; }
         public DbSet<GozetmenAtama> GozetmenAtamalari { get; set; }
         public DbSet<IslemLog> IslemLoglari { get; set; }
+        public DbSet<Kullanici> Kullanicilar { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
