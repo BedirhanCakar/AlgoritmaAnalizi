@@ -90,6 +90,44 @@ namespace ExamScheduler.Controllers
             return RedirectToAction(nameof(Oturumlar));
         }
         
+        // --- AKILLI SALON ATAMA (SINAVLAR) ---
+        public async Task<IActionResult> AkilliAtama()
+        {
+            var sinavlar = await _context.Sinavlar
+                .Include(s => s.Ders)
+                .Include(s => s.Oturum)
+                .Include(s => s.Salonlar).ThenInclude(ss => ss.Derslik)
+                .ToListAsync();
+
+            ViewBag.Dersler = new SelectList(_context.Dersler, "Id", "Ad");
+            ViewBag.Oturumlar = new SelectList(_context.Oturumlar, "Id", "Tanim");
+            return View(sinavlar);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SinavEkle(Sinav sinav)
+        {
+            _context.Sinavlar.Add(sinav);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(AkilliAtama));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SalonAta(int id)
+        {
+            try
+            {
+                // Stored Procedure Çağrısı (Cursor ile otomatik dağıtım)
+                await _context.Database.ExecuteSqlRawAsync("EXEC SP_AkilliSalonHesapla @p0", id);
+                TempData["Success"] = "Akıllı atama algoritması başarıyla çalıştırıldı ve salonlar dağıtıldı.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Atama sırasında bir hata oluştu: " + ex.Message;
+            }
+            return RedirectToAction(nameof(AkilliAtama));
+        }
+
         // --- SİLME İŞLEMLERİ ---
         [HttpPost]
         public async Task<IActionResult> Sil(string tur, int id)
@@ -102,12 +140,15 @@ namespace ExamScheduler.Controllers
                     case "Derslik": var dl = await _context.Derslikler.FindAsync(id); if(dl!=null) _context.Derslikler.Remove(dl); break;
                     case "Personel": var p = await _context.Personeller.FindAsync(id); if(p!=null) _context.Personeller.Remove(p); break;
                     case "Oturum": var o = await _context.Oturumlar.FindAsync(id); if(o!=null) _context.Oturumlar.Remove(o); break;
+                    case "Sinav": var s = await _context.Sinavlar.FindAsync(id); if(s!=null) _context.Sinavlar.Remove(s); break;
                 }
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Kayıt başarıyla silindi.";
             } catch {
                 TempData["Error"] = "Bu kayda bağlı başka veriler olduğu için silinemedi.";
             }
+            
+            if (tur == "Sinav") return RedirectToAction(nameof(AkilliAtama));
             return RedirectToAction(tur + "ler");
         }
     }

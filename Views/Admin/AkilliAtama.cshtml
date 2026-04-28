@@ -1,0 +1,132 @@
+@model IEnumerable<ExamScheduler.Models.Entities.Sinav>
+@{ ViewData["Title"] = "Akıllı Salon Atama"; }
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-primary mb-1"><i class="bi bi-magic text-warning"></i> Akıllı Salon (Kapasite) Hesaplama</h2>
+        <p class="text-muted mb-0">Öğrenci sayısına göre optimum salon dağılımını otomatik olarak hesaplayın.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <button type="button" class="btn btn-primary shadow" data-bs-toggle="modal" data-bs-target="#ekleModal">
+            <i class="bi bi-plus-circle"></i> Sınav (Talep) Oluştur
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null) { <div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> @TempData["Success"]</div> }
+@if (TempData["Error"] != null) { <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div> }
+
+<!-- Yeni Sınav Modalı -->
+<div class="modal fade" id="ekleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Yeni Sınav (Atama Talebi)</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form asp-action="SinavEkle" method="post">
+          <div class="modal-body">
+              <div class="mb-3">
+                  <label class="form-label">Sınavı Yapılacak Ders</label>
+                  <select name="DersId" class="form-select" asp-items="ViewBag.Dersler" required>
+                      <option value="">Seçiniz...</option>
+                  </select>
+              </div>
+              <div class="mb-3">
+                  <label class="form-label">Oturum (Saat Aralığı)</label>
+                  <select name="OturumId" class="form-select" asp-items="ViewBag.Oturumlar" required>
+                      <option value="">Seçiniz...</option>
+                  </select>
+              </div>
+              <div class="mb-3">
+                  <label class="form-label">Tarih</label>
+                  <input type="date" name="Tarih" class="form-control" required />
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+    @if (!Model.Any())
+    {
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 4rem;"></i>
+            <h4 class="text-muted">Henüz planlanmış bir sınav yok.</h4>
+            <p>Akıllı atama yapmak için önce bir sınav talebi oluşturmalısınız.</p>
+        </div>
+    }
+
+    @foreach (var item in Model)
+    {
+        var atananKapasite = item.Salonlar.Sum(s => s.Derslik.Kapasite);
+        var ihtiyac = item.Ders?.OgrenciSayisi ?? 0;
+        var yuzde = ihtiyac > 0 ? Math.Min(100, (atananKapasite * 100) / ihtiyac) : 0;
+        var renk = yuzde >= 100 ? "success" : (yuzde > 0 ? "warning" : "danger");
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0 d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="badge bg-primary mb-2">@item.Tarih.ToShortDateString()</span>
+                        <h5 class="fw-bold mb-1">@(item.Ders?.Ad ?? "Bilinmeyen Ders")</h5>
+                        <p class="text-muted small"><i class="bi bi-clock"></i> @(item.Oturum?.Tanim ?? "-")</p>
+                    </div>
+                    <form asp-action="Sil" method="post" onsubmit="return confirm('Bu sınavı iptal etmek istiyor musunuz?');">
+                        <input type="hidden" name="tur" value="Sinav" />
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <button type="submit" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Atanan Kapasite</span>
+                        <span class="fw-bold text-@renk">@atananKapasite / @ihtiyac</span>
+                    </div>
+                    <div class="progress mb-4" style="height: 10px;">
+                        <div class="progress-bar bg-@renk" role="progressbar" style="width: @yuzde%" aria-valuenow="@yuzde" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <div class="bg-light rounded p-3 mb-3">
+                        <h6 class="fw-bold mb-2 small text-uppercase text-muted">Atanan Salonlar</h6>
+                        @if (item.Salonlar.Any())
+                        {
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var s in item.Salonlar)
+                                {
+                                    <span class="badge bg-white text-dark border"><i class="bi bi-door-open"></i> @s.Derslik.Ad (@s.Derslik.Kapasite)</span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted small fst-italic">Henüz salon atanmamış.</span>
+                        }
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 pb-4">
+                    @if (yuzde < 100)
+                    {
+                        <form asp-action="SalonAta" method="post">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm">
+                                <i class="bi bi-magic"></i> Akıllı Atamayı Çalıştır
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <button class="btn btn-success w-100 disabled">
+                            <i class="bi bi-check2-circle"></i> Kapasite Yeterli
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
