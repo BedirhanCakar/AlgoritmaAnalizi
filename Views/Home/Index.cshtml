@@ -1,8 +1,68 @@
-﻿@{
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row align-items-center min-vh-75 py-5 mt-4">
+    <div class="col-lg-6 mb-5 mb-lg-0">
+        <h1 class="display-4 fw-bold text-dark mb-4">
+            Modern ve Akıllı <br />
+            <span class="text-primary">Sınav Yönetim</span> Sistemi
+        </h1>
+        <p class="lead text-muted mb-5">
+            Ders programlarınıza uygun kapasite planlaması yapın, çakışmaları sıfıra indirin ve gözetmen atamalarını saniyeler içinde otomatikleştirin.
+        </p>
+        <div class="d-flex gap-3">
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg px-4 shadow">Hemen Başla</a>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-dark btn-lg px-4">Giriş Yap</a>
+            }
+            else
+            {
+                <a asp-controller="Home" asp-action="Takvim" class="btn btn-primary btn-lg px-4 shadow">Sınav Takvimini Gör</a>
+            }
+        </div>
+        
+        <div class="row mt-5 pt-4 border-top">
+            <div class="col-4">
+                <h3 class="fw-bold text-primary mb-1">100%</h3>
+                <span class="text-muted small">Otomasyon</span>
+            </div>
+            <div class="col-4">
+                <h3 class="fw-bold text-primary mb-1">0</h3>
+                <span class="text-muted small">Çakışma Oranı</span>
+            </div>
+            <div class="col-4">
+                <h3 class="fw-bold text-primary mb-1">7/24</h3>
+                <span class="text-muted small">Bulut Erişimi</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 text-center">
+        <!-- Modern, abstract bir görsel veya ikon bloğu eklenebilir -->
+        <div class="p-5 bg-white rounded-4 shadow-lg position-relative">
+            <i class="bi bi-calendar3 text-primary opacity-25 position-absolute" style="font-size: 15rem; top: -20px; right: 20px;"></i>
+            <div class="position-relative z-index-1">
+                <h4 class="fw-bold mb-4">Neler Yapabilirsiniz?</h4>
+                <ul class="list-unstyled text-start mb-0">
+                    <li class="mb-3 d-flex align-items-center gap-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded text-primary"><i class="bi bi-building"></i></div>
+                        <span class="fw-medium">Akıllı Salon (Kapasite) Hesaplama</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-center gap-3">
+                        <div class="bg-success bg-opacity-10 p-2 rounded text-success"><i class="bi bi-person-check"></i></div>
+                        <span class="fw-medium">Adil Gözetmen Atama Havuzu</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-center gap-3">
+                        <div class="bg-danger bg-opacity-10 p-2 rounded text-danger"><i class="bi bi-shield-check"></i></div>
+                        <span class="fw-medium">Rol Tabanlı Güvenlik Yönetimi</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-3">
+                        <div class="bg-warning bg-opacity-10 p-2 rounded text-warning"><i class="bi bi-graph-up"></i></div>
+                        <span class="fw-medium">Detaylı Takvim Raporları</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
