@@ -1,0 +1,97 @@
+@model IEnumerable<ExamScheduler.Models.Entities.Derslik>
+@{ ViewData["Title"] = "Salon Yönetimi"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary"><i class="bi bi-door-open"></i> Salon (Derslik) Yönetimi</h2>
+    <button type="button" class="btn btn-primary shadow" data-bs-toggle="modal" data-bs-target="#ekleModal">
+        <i class="bi bi-plus-circle"></i> Yeni Salon Ekle
+    </button>
+</div>
+
+@if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+@if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+<!-- Modal -->
+<div class="modal fade" id="ekleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Yeni Salon Ekle</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form asp-action="DerslikEkle" method="post">
+          <div class="modal-body">
+              <div class="mb-3">
+                  <label class="form-label">Salon Adı / Kodu (Örn: Z-04, Amfi-1)</label>
+                  <input type="text" name="Ad" class="form-control" required />
+              </div>
+              <div class="row">
+                  <div class="col-md-6 mb-3">
+                      <label class="form-label">Kapasite</label>
+                      <input type="number" name="Kapasite" class="form-control" min="1" required />
+                  </div>
+                  <div class="col-md-6 mb-3">
+                      <label class="form-label">Tip</label>
+                      <select name="Tip" class="form-select">
+                          <option value="Sınıf">Sınıf</option>
+                          <option value="Büyük Amfi">Büyük Amfi</option>
+                          <option value="Lab">Lab</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="mb-3 form-check">
+                  <input type="checkbox" name="Aktif" value="true" class="form-check-input" id="chkAktif" checked />
+                  <label class="form-check-label" for="chkAktif">Kullanıma Açık</label>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-white">Sistemdeki Salonlar</h5>
+        <span class="badge bg-light text-dark rounded-pill">Toplam: @Model.Count()</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Salon Adı</th>
+                        <th>Kapasite</th>
+                        <th>Tip</th>
+                        <th>Durum</th>
+                        <th class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-medium">@item.Ad</td>
+                            <td><i class="bi bi-people"></i> @item.Kapasite</td>
+                            <td>@item.Tip</td>
+                            <td>
+                                @if(item.Aktif) { <span class="badge bg-success">Aktif</span> }
+                                else { <span class="badge bg-danger">Pasif</span> }
+                            </td>
+                            <td class="text-end">
+                                <form asp-action="Sil" method="post" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                    <input type="hidden" name="tur" value="Derslik" />
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Sil</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

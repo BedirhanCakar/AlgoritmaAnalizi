@@ -5,7 +5,63 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold text-primary"><i class="bi bi-book"></i> Ders Yönetimi</h2>
-    <a href="#" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Yeni Ders Ekle</a>
+    <button type="button" class="btn btn-primary shadow" data-bs-toggle="modal" data-bs-target="#dersEkleModal">
+        <i class="bi bi-plus-circle"></i> Yeni Ders Ekle
+    </button>
+</div>
+
+@if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+@if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+<!-- Modal -->
+<div class="modal fade" id="dersEkleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Yeni Ders Ekle</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form asp-action="DersEkle" method="post">
+          <div class="modal-body">
+              <div class="mb-3">
+                  <label class="form-label">Ders Kodu</label>
+                  <input type="text" name="DersKodu" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                  <label class="form-label">Ders Adı</label>
+                  <input type="text" name="Ad" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                  <label class="form-label">Bölüm</label>
+                  <select name="BolumId" class="form-select" asp-items="ViewBag.Bolumler" required>
+                      <option value="">Seçiniz...</option>
+                  </select>
+              </div>
+              <div class="row">
+                  <div class="col-md-4 mb-3">
+                      <label class="form-label">Tür</label>
+                      <select name="DersTuru" class="form-select">
+                          <option value="Zorunlu">Zorunlu</option>
+                          <option value="Seçmeli">Seçmeli</option>
+                      </select>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                      <label class="form-label">Öğrenci Sayısı</label>
+                      <input type="number" name="OgrenciSayisi" class="form-control" required />
+                  </div>
+                  <div class="col-md-4 mb-3">
+                      <label class="form-label">Yarıyıl</label>
+                      <input type="number" name="Yariyil" class="form-control" min="1" max="8" required />
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+          </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <div class="card">
@@ -47,8 +103,11 @@
                             <td>@item.Yariyil. Dönem</td>
                             <td>@(item.Bolum?.Ad ?? "-")</td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                <form asp-action="Sil" method="post" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                    <input type="hidden" name="tur" value="Ders" />
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Sil</button>
+                                </form>
                             </td>
                         </tr>
                     }
