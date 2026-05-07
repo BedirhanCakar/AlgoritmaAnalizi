@@ -43,6 +43,14 @@
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Oturumlar"><i class="bi bi-clock text-primary"></i> Oturumlar</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="AkilliAtama"><i class="bi bi-magic text-warning"></i> Akıllı Salon Atama</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="HavuzSistemi"><i class="bi bi-person-lines-fill text-info"></i> Havuz Sistemi (Gözetmen)</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Loglar"><i class="bi bi-journal-code text-secondary"></i> İşlem Logları</a></li>
+                                        <li>
+                                            <form asp-controller="Admin" asp-action="YedekAl" method="post" class="m-0 p-0 d-inline">
+                                                <button type="submit" class="dropdown-item text-success"><i class="bi bi-database-down"></i> Veritabanı Yedeği Al</button>
+                                            </form>
+                                        </li>
                                     </ul>
                                 </li>
                             }

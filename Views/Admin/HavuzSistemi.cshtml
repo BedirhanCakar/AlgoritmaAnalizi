@@ -1,0 +1,114 @@
+@model IEnumerable<ExamScheduler.Models.Entities.SinavSalonu>
+@{ ViewData["Title"] = "Havuz Sistemi ve Gözetmen Atama"; }
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-primary mb-1"><i class="bi bi-person-lines-fill text-info"></i> Havuz Sistemi ve Gözetmen Atama</h2>
+        <p class="text-muted mb-0">Adil görev dağıtımı algoritması ile gözetmen atamalarını otomatikleştirin.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <form asp-action="OtomatikGozetmenAta" method="post" onsubmit="return confirm('Atanmamış tüm salonlara adil havuz sisteminden gözetmen atanacak. Onaylıyor musunuz?');">
+            <button type="submit" class="btn btn-info text-white shadow-sm fw-bold">
+                <i class="bi bi-magic"></i> Tümüne Gözetmen Ata
+            </button>
+        </form>
+    </div>
+</div>
+
+@if (TempData["Success"] != null) { <div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> @TempData["Success"]</div> }
+@if (TempData["Error"] != null) { <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div> }
+
+<div class="row">
+    <!-- Sol Taraf: Atanması Gereken veya Atanmış Sınav Salonları -->
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white pt-4 pb-3">
+                <h5 class="fw-bold mb-0">Sınav Salonları (Görev Bölgeleri)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tarih & Oturum</th>
+                                <th>Ders</th>
+                                <th>Salon</th>
+                                <th>Atanan Gözetmen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Any())
+                            {
+                                <tr><td colspan="4" class="text-center py-4 text-muted fst-italic">Aktif sınav salonu bulunmuyor. Önce Akıllı Atama yapmalısınız.</td></tr>
+                            }
+                            @foreach (var item in Model)
+                            {
+                                var atama = item.Gozetmenler.FirstOrDefault();
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-medium">@item.Sinav?.Tarih.ToShortDateString()</span>
+                                            <span class="small text-muted">@item.Sinav?.Oturum?.Tanim</span>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold">@item.Sinav?.Ders?.DersKodu</td>
+                                    <td><span class="badge bg-secondary">@item.Derslik?.Ad</span></td>
+                                    <td>
+                                        @if (atama != null)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success p-2 rounded-pill">
+                                                <i class="bi bi-person-check-fill"></i> @atama.Personel?.Ad @atama.Personel?.Soyad
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning p-2 rounded-pill">
+                                                <i class="bi bi-hourglass-split"></i> Atama Bekliyor
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sağ Taraf: Havuz Durumu -->
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm h-100 bg-light">
+            <div class="card-header bg-transparent pt-4 pb-3">
+                <h5 class="fw-bold mb-0">Havuz Yük Durumu</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush bg-transparent">
+                    @{
+                        var personelYuku = ViewBag.PersonelYuku as IEnumerable<dynamic>;
+                        if (personelYuku == null || !personelYuku.Any())
+                        {
+                            <li class="list-group-item bg-transparent text-muted fst-italic py-3">Sistemde kayıtlı gözetmen/personel yok.</li>
+                        }
+                        else
+                        {
+                            foreach (var p in personelYuku)
+                            {
+                                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <div class="fw-bold">@p.Personel.Ad @p.Personel.Soyad</div>
+                                        <div class="small text-muted">@p.Personel.Unvan</div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill fs-6 px-3">@p.GorevSayisi Görev</span>
+                                </li>
+                            }
+                        }
+                    }
+                </ul>
+            </div>
+            <div class="card-footer bg-transparent border-0 pb-4 pt-3 text-center">
+                <small class="text-muted"><i class="bi bi-info-circle"></i> Sistem her zaman en az görevi olan uygun personeli seçer.</small>
+            </div>
+        </div>
+    </div>
+</div>

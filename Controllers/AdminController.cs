@@ -128,6 +128,59 @@ namespace ExamScheduler.Controllers
             return RedirectToAction(nameof(AkilliAtama));
         }
 
+        // --- HAVUZ SİSTEMİ VE GÖZETMEN ATAMA (MODÜL 3) ---
+        public async Task<IActionResult> HavuzSistemi()
+        {
+            // Havuzdaki personelin yük durumu
+            var personelYuku = await _context.Personeller
+                .Select(p => new
+                {
+                    Personel = p,
+                    GorevSayisi = _context.GozetmenAtamalari.Count(ga => ga.PersonelId == p.Id)
+                })
+                .OrderBy(x => x.GorevSayisi)
+                .ToListAsync();
+
+            ViewBag.PersonelYuku = personelYuku;
+
+            // Atanmış sınav salonları ve gözetmen durumları
+            var sinavSalonlari = await _context.SinavSalonlari
+                .Include(ss => ss.Sinav).ThenInclude(s => s.Ders)
+                .Include(ss => ss.Sinav).ThenInclude(s => s.Oturum)
+                .Include(ss => ss.Derslik)
+                .Include(ss => ss.Gozetmenler).ThenInclude(ga => ga.Personel)
+                .ToListAsync();
+
+            return View(sinavSalonlari);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> OtomatikGozetmenAta()
+        {
+            try
+            {
+                // Gözetmeni olmayan salonları bul
+                var atanmamisSalonlar = await _context.SinavSalonlari
+                    .Where(ss => !ss.Gozetmenler.Any())
+                    .ToListAsync();
+
+                int atananSayisi = 0;
+                foreach (var salon in atanmamisSalonlar)
+                {
+                    // SP Çağrısı: En az görev alan uygun personeli atar
+                    await _context.Database.ExecuteSqlRawAsync("EXEC SP_GozetmenHavuzAtama @p0", salon.Id);
+                    atananSayisi++;
+                }
+
+                TempData["Success"] = $"{atananSayisi} adet salona havuz sisteminden otomatik gözetmen ataması yapıldı.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Gözetmen ataması sırasında bir hata oluştu: " + ex.Message;
+            }
+            return RedirectToAction(nameof(HavuzSistemi));
+        }
+
         // --- SİLME İŞLEMLERİ ---
         [HttpPost]
         public async Task<IActionResult> Sil(string tur, int id)
@@ -150,6 +203,30 @@ namespace ExamScheduler.Controllers
             
             if (tur == "Sinav") return RedirectToAction(nameof(AkilliAtama));
             return RedirectToAction(tur + "ler");
+        }
+        // --- İŞLEM LOGLARI ---
+        public async Task<IActionResult> Loglar()
+        {
+            var loglar = await _context.IslemLoglari.OrderByDescending(l => l.IslemTarihi).ToListAsync();
+            return View(loglar);
+        }
+
+        // --- VERİTABANI YEDEKLEME ---
+        [HttpPost]
+        public async Task<IActionResult> YedekAl()
+        {
+            try
+            {
+                // Docker içerisindeki SQL Server'da /var/opt/mssql/data/ dizinine yedek alır.
+                string backupPath = "/var/opt/mssql/data";
+                await _context.Database.ExecuteSqlRawAsync("EXEC SP_YedekAl @p0", backupPath);
+                TempData["Success"] = "Veritabanı başarıyla yedeklendi. (Konum: Docker içerisindeki /var/opt/mssql/data/ dizini)";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Yedekleme sırasında bir hata oluştu: " + ex.Message;
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }

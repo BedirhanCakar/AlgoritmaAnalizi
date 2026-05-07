@@ -1,0 +1,79 @@
+@model IEnumerable<ExamScheduler.Models.Entities.Sinav>
+@{
+    ViewData["Title"] = "Sınav Takvimi";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Sınav Takvimi</h2>
+        <button class="btn btn-outline-secondary" onclick="window.print()">
+            <i class="bi bi-printer"></i> Yazdır
+        </button>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info shadow-sm">
+            Henüz planlanmış bir sınav bulunmamaktadır.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Ders</th>
+                                <th>Oturum Tarihi/Saati</th>
+                                <th>Öğrenci Sayısı</th>
+                                <th>Sınav Salonları & Gözetmenler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sinav in Model)
+                            {
+                                <tr>
+                                    <td class="align-middle fw-bold">@sinav.Ders.Ad</td>
+                                    <td class="align-middle">
+                                        <div>@sinav.Oturum.BaslangicSaat.ToString("dd.MM.yyyy")</div>
+                                        <div class="text-muted small">@sinav.Oturum.BaslangicSaat.ToString("HH:mm") - @sinav.Oturum.BitisSaat.ToString("HH:mm")</div>
+                                    </td>
+                                    <td class="align-middle">@sinav.Ders.OgrenciSayisi</td>
+                                    <td class="align-middle">
+                                        @if (sinav.Salonlar != null && sinav.Salonlar.Any())
+                                        {
+                                            <ul class="list-unstyled mb-0">
+                                                @foreach (var salon in sinav.Salonlar)
+                                                {
+                                                    <li class="mb-2 pb-2 border-bottom border-light">
+                                                        <span class="badge bg-primary me-2">@salon.Derslik.Ad</span>
+                                                        <span class="text-muted small">
+                                                            @if (salon.Gozetmenler != null && salon.Gozetmenler.Any())
+                                                            {
+                                                                <i class="bi bi-person-badge"></i> @string.Join(", ", salon.Gozetmenler.Select(g => g.Personel.Ad + " " + g.Personel.Soyad))
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Gözetmen Atanmadı</span>
+                                                            }
+                                                        </span>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Salon Atanmadı</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,54 @@
+@model IEnumerable<ExamScheduler.Models.Entities.IslemLog>
+@{
+    ViewData["Title"] = "İşlem Logları";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Sistem İşlem Logları</h2>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">Geri Dön</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Kullanıcı</th>
+                            <th>İşlem Tipi</th>
+                            <th>Tablo</th>
+                            <th>Kayıt ID</th>
+                            <th>Eski Değer</th>
+                            <th>Yeni Değer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model)
+                        {
+                            <tr>
+                                <td>@log.IslemTarihi.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                                <td>@log.YapanKullanici</td>
+                                <td>
+                                    @if (log.IslemTipi == "INSERT") { <span class="badge bg-success">@log.IslemTipi</span> }
+                                    else if (log.IslemTipi == "UPDATE") { <span class="badge bg-warning text-dark">@log.IslemTipi</span> }
+                                    else if (log.IslemTipi == "DELETE") { <span class="badge bg-danger">@log.IslemTipi</span> }
+                                    else { <span class="badge bg-secondary">@log.IslemTipi</span> }
+                                </td>
+                                <td>@log.TabloAdi</td>
+                                <td>@log.KayitId</td>
+                                <td class="text-muted small">@log.EskiDeger</td>
+                                <td class="text-success small">@log.YeniDeger</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @if (!Model.Any())
+            {
+                <div class="text-center p-4 text-muted">Henüz kaydedilmiş bir log bulunmamaktadır. (Örn: Sınav güncellediğinizde burada görünür.)</div>
+            }
+        </div>
+    </div>
+</div>
