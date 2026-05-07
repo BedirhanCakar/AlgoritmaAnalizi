@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 
 using ExamScheduler.Data;
 using ExamScheduler.Models.Entities;
@@ -17,6 +20,16 @@ namespace ExamScheduler.Controllers
         {
             _context = context;
         }
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(bytes);
+            }
+        }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -31,8 +44,9 @@ namespace ExamScheduler.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string KullaniciAdi, string Sifre)
         {
+            string hashedSifre = HashPassword(Sifre);
             var user = await _context.Kullanicilar
-                .FirstOrDefaultAsync(u => u.KullaniciAdi == KullaniciAdi && u.Sifre == Sifre);
+                .FirstOrDefaultAsync(u => u.KullaniciAdi == KullaniciAdi && u.Sifre == hashedSifre);
 
             if (user == null)
             {
@@ -70,6 +84,15 @@ namespace ExamScheduler.Controllers
                 return View(model);
             }
 
+            // Şifre kuralları kontrolü (En az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam)
+            if (!Regex.IsMatch(model.Sifre, @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"))
+            {
+                TempData["Error"] = "Şifreniz en az 8 karakter uzunluğunda olmalı, en az 1 büyük harf, 1 küçük harf ve 1 rakam içermelidir.";
+                return View(model);
+            }
+
+            model.Sifre = HashPassword(model.Sifre);
+
             _context.Kullanicilar.Add(model);
             await _context.SaveChangesAsync();
 
@@ -84,3 +107,4 @@ namespace ExamScheduler.Controllers
         }
     }
 }
+

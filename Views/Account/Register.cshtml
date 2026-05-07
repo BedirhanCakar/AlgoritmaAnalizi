@@ -21,7 +21,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Şifre</label>
-                            <input type="password" name="Sifre" class="form-control" required />
+                            <input type="password" name="Sifre" class="form-control" required pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$" title="En az 8 karakter, 1 büyük harf, 1 küçük harf ve 1 sayı içermelidir." />
+                            <small class="text-muted d-block mt-1"><i class="bi bi-info-circle"></i> En az 8 karakter, 1 büyük harf, 1 küçük harf, 1 sayı.</small>
                         </div>
                         <div class="mb-4">
                             <label class="form-label">Rol Seçimi</label>

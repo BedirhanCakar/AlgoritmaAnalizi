@@ -9,6 +9,7 @@ namespace ExamScheduler.Models.Entities
         [Required, StringLength(100)]
         public string Ad { get; set; }
 
+        [Range(1, int.MaxValue, ErrorMessage = "Kapasite en az 1 olmalıdır.")]
         public int Kapasite { get; set; }
         
         [Required, StringLength(50)]

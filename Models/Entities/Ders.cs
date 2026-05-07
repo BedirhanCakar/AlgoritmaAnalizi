@@ -15,8 +15,10 @@ namespace ExamScheduler.Models.Entities
         [Required, StringLength(50)]
         public string DersTuru { get; set; } // Zorunlu, Seçmeli
 
+        [Range(1, int.MaxValue, ErrorMessage = "Öğrenci sayısı en az 1 olmalıdır.")]
         public int OgrenciSayisi { get; set; }
         
+        [Range(1, 14, ErrorMessage = "Yarıyıl 1 ile 14 arasında olmalıdır.")]
         public int Yariyil { get; set; } // 1, 2, 3... vb.
 
         public int BolumId { get; set; }
