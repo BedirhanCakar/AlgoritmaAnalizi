@@ -107,8 +107,40 @@ namespace ExamScheduler.Controllers
         [HttpPost]
         public async Task<IActionResult> SinavEkle(Sinav sinav)
         {
+            if (await _context.Sinavlar.AnyAsync(s => s.DersId == sinav.DersId))
+            {
+                TempData["Error"] = "Bu dersin zaten planlanmış bir sınavı var, yenisini eklemek için önce mevcut olanı silmelisiniz.";
+                return RedirectToAction(nameof(AkilliAtama));
+            }
+
             _context.Sinavlar.Add(sinav);
             await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(AkilliAtama));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SinavGuncelle(int id)
+        {
+            var sinav = await _context.Sinavlar.Include(s => s.Ders).FirstOrDefaultAsync(s => s.Id == id);
+            if (sinav == null) return NotFound();
+
+            ViewBag.Oturumlar = new SelectList(_context.Oturumlar, "Id", "Tanim");
+            return View(sinav);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SinavGuncelle(Sinav model)
+        {
+            var sinav = await _context.Sinavlar.FindAsync(model.Id);
+            if (sinav == null) return NotFound();
+
+            sinav.OturumId = model.OturumId;
+            sinav.Tarih = model.Tarih;
+            
+            _context.Sinavlar.Update(sinav);
+            await _context.SaveChangesAsync();
+            
+            TempData["Success"] = "Sınav başarıyla güncellendi ve işlem loglara kaydedildi.";
             return RedirectToAction(nameof(AkilliAtama));
         }
 
@@ -217,10 +249,9 @@ namespace ExamScheduler.Controllers
         {
             try
             {
-                // Docker içerisindeki SQL Server'da /var/opt/mssql/data/ dizinine yedek alır.
-                string backupPath = "/var/opt/mssql/data";
+                string backupPath = "/var/opt/mssql/backup";
                 await _context.Database.ExecuteSqlRawAsync("EXEC SP_YedekAl @p0", backupPath);
-                TempData["Success"] = "Veritabanı başarıyla yedeklendi. (Konum: Docker içerisindeki /var/opt/mssql/data/ dizini)";
+                TempData["Success"] = "Veritabanı başarıyla yedeklendi. (Proje dizinindeki 'Yedekler' klasörüne kaydedildi)";
             }
             catch (Exception ex)
             {

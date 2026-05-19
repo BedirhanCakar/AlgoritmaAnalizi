@@ -77,11 +77,14 @@
                         <h5 class="fw-bold mb-1">@(item.Ders?.Ad ?? "Bilinmeyen Ders")</h5>
                         <p class="text-muted small"><i class="bi bi-clock"></i> @(item.Oturum?.Tanim ?? "-")</p>
                     </div>
-                    <form asp-action="Sil" method="post" onsubmit="return confirm('Bu sınavı iptal etmek istiyor musunuz?');">
-                        <input type="hidden" name="tur" value="Sinav" />
-                        <input type="hidden" name="id" value="@item.Id" />
-                        <button type="submit" class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
-                    </form>
+                    <div class="d-flex gap-2">
+                        <a asp-action="SinavGuncelle" asp-route-id="@item.Id" class="btn btn-sm btn-light text-primary" title="Güncelle"><i class="bi bi-pencil"></i></a>
+                        <form asp-action="Sil" method="post" onsubmit="return confirm('Bu sınavı iptal etmek istiyor musunuz?');">
+                            <input type="hidden" name="tur" value="Sinav" />
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" class="btn btn-sm btn-light text-danger" title="Sil"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">

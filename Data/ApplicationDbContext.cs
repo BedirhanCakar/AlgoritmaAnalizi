@@ -79,6 +79,13 @@ namespace ExamScheduler.Data
                 .WithMany(p => p.Durumlar)
                 .HasForeignKey(pd => pd.PersonelId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Trigger'ı olan tablolar için EF Core ayarları
+            modelBuilder.Entity<Sinav>()
+                .ToTable(tb => tb.HasTrigger("TR_SinavLog_InsertUpdateDelete"));
+
+            modelBuilder.Entity<SinavSalonu>()
+                .ToTable(tb => tb.HasTrigger("TR_SinavSalonuKapasiteKontrol"));
         }
     }
 }

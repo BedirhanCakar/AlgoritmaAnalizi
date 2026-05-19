@@ -310,7 +310,12 @@ namespace ExamScheduler.Migrations
 
                     b.HasIndex("OturumId");
 
-                    b.ToTable("Sinavlar");
+                    b.ToTable("Sinavlar", t =>
+                        {
+                            t.HasTrigger("TR_SinavLog_InsertUpdateDelete");
+                        });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("ExamScheduler.Models.Entities.SinavSalonu", b =>
@@ -333,7 +338,12 @@ namespace ExamScheduler.Migrations
 
                     b.HasIndex("SinavId");
 
-                    b.ToTable("SinavSalonlari");
+                    b.ToTable("SinavSalonlari", t =>
+                        {
+                            t.HasTrigger("TR_SinavSalonuKapasiteKontrol");
+                        });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("ExamScheduler.Models.Entities.Ders", b =>

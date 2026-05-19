@@ -1,0 +1,39 @@
+@model ExamScheduler.Models.Entities.Sinav
+@{ ViewData["Title"] = "Sınav Güncelle"; }
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-warning text-dark py-3">
+                <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Sınav (Tarih/Oturum) Güncelle</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="SinavGuncelle" method="post">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ders (Değiştirilemez)</label>
+                        <input type="text" class="form-control" value="@Model.Ders?.Ad" disabled />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tarih</label>
+                        <input type="date" name="Tarih" class="form-control" value="@Model.Tarih.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Oturum (Saat Aralığı)</label>
+                        <select name="OturumId" class="form-select" asp-items="ViewBag.Oturumlar" asp-for="OturumId" required>
+                            <option value="">Seçiniz...</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="AkilliAtama" class="btn btn-secondary">İptal</a>
+                        <button type="submit" class="btn btn-warning fw-bold">Güncelle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
