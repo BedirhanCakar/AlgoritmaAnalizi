@@ -113,6 +113,53 @@ namespace ExamScheduler.Controllers
                 return RedirectToAction(nameof(AkilliAtama));
             }
 
+            // Dönem (Yarıyıl) Çakışması Kontrolü (UDF - FN_DersCakismasiVarMi çağrılarak)
+            var cakisiyor = false;
+            using (var command = _context.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = "SELECT dbo.FN_DersCakismasiVarMi(@DersId, @OturumId, @Tarih)";
+                
+                var pDersId = command.CreateParameter();
+                pDersId.ParameterName = "@DersId";
+                pDersId.Value = sinav.DersId;
+                command.Parameters.Add(pDersId);
+                
+                var pOturumId = command.CreateParameter();
+                pOturumId.ParameterName = "@OturumId";
+                pOturumId.Value = sinav.OturumId;
+                command.Parameters.Add(pOturumId);
+                
+                var pTarih = command.CreateParameter();
+                pTarih.ParameterName = "@Tarih";
+                pTarih.Value = sinav.Tarih;
+                command.Parameters.Add(pTarih);
+                
+                if (command.Connection.State != System.Data.ConnectionState.Open)
+                    await command.Connection.OpenAsync();
+                    
+                var result = await command.ExecuteScalarAsync();
+                if (result != null && result != DBNull.Value)
+                {
+                    cakisiyor = Convert.ToBoolean(result);
+                }
+            }
+
+            if (cakisiyor)
+            {
+                TempData["Error"] = "Aynı yarıyılda yer alan derslerin sınavları aynı oturuma planlanamaz! (Dönem Çakışması Engellendi)";
+                return RedirectToAction(nameof(AkilliAtama));
+            }
+
+            // Günlük Sınav Limiti Kontrolü (Yarıyıl başına günde en fazla 1 sınav)
+            var yariyil = await _context.Dersler.Where(d => d.Id == sinav.DersId).Select(d => d.Yariyil).FirstOrDefaultAsync();
+            var gunlukSinavSayisi = await _context.Sinavlar
+                .CountAsync(s => s.Tarih.Date == sinav.Tarih.Date && s.Ders.Yariyil == yariyil);
+            if (gunlukSinavSayisi >= 1)
+            {
+                TempData["Error"] = $"Hata: {yariyil}. Yarıyıl için {sinav.Tarih.ToString("dd.MM.yyyy")} tarihinde zaten planlanmış bir sınav bulunmaktadır! Aynı dönem için günde en fazla 1 sınav planlanabilir.";
+                return RedirectToAction(nameof(AkilliAtama));
+            }
+
             _context.Sinavlar.Add(sinav);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(AkilliAtama));
@@ -133,6 +180,53 @@ namespace ExamScheduler.Controllers
         {
             var sinav = await _context.Sinavlar.FindAsync(model.Id);
             if (sinav == null) return NotFound();
+
+            // Dönem (Yarıyıl) Çakışması Kontrolü (UDF - FN_DersCakismasiVarMi çağrılarak)
+            var cakisiyor = false;
+            using (var command = _context.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = "SELECT dbo.FN_DersCakismasiVarMi(@DersId, @OturumId, @Tarih)";
+                
+                var pDersId = command.CreateParameter();
+                pDersId.ParameterName = "@DersId";
+                pDersId.Value = sinav.DersId;
+                command.Parameters.Add(pDersId);
+                
+                var pOturumId = command.CreateParameter();
+                pOturumId.ParameterName = "@OturumId";
+                pOturumId.Value = model.OturumId;
+                command.Parameters.Add(pOturumId);
+                
+                var pTarih = command.CreateParameter();
+                pTarih.ParameterName = "@Tarih";
+                pTarih.Value = model.Tarih;
+                command.Parameters.Add(pTarih);
+                
+                if (command.Connection.State != System.Data.ConnectionState.Open)
+                    await command.Connection.OpenAsync();
+                    
+                var result = await command.ExecuteScalarAsync();
+                if (result != null && result != DBNull.Value)
+                {
+                    cakisiyor = Convert.ToBoolean(result);
+                }
+            }
+
+            if (cakisiyor)
+            {
+                TempData["Error"] = "Aynı yarıyılda yer alan derslerin sınavları aynı oturuma planlanamaz! (Dönem Çakışması Engellendi)";
+                return RedirectToAction(nameof(AkilliAtama));
+            }
+
+            // Günlük Sınav Limiti Kontrolü (Yarıyıl başına günde en fazla 1 sınav)
+            var yariyil = await _context.Dersler.Where(d => d.Id == sinav.DersId).Select(d => d.Yariyil).FirstOrDefaultAsync();
+            var gunlukSinavSayisi = await _context.Sinavlar
+                .CountAsync(s => s.Tarih.Date == model.Tarih.Date && s.Ders.Yariyil == yariyil && s.Id != model.Id);
+            if (gunlukSinavSayisi >= 1)
+            {
+                TempData["Error"] = $"Hata: {yariyil}. Yarıyıl için {model.Tarih.ToString("dd.MM.yyyy")} tarihinde zaten planlanmış bir sınav bulunmaktadır! Aynı dönem için günde en fazla 1 sınav planlanabilir.";
+                return RedirectToAction(nameof(AkilliAtama));
+            }
 
             sinav.OturumId = model.OturumId;
             sinav.Tarih = model.Tarih;
@@ -234,8 +328,43 @@ namespace ExamScheduler.Controllers
             }
             
             if (tur == "Sinav") return RedirectToAction(nameof(AkilliAtama));
+            if (tur == "Oturum") return RedirectToAction(nameof(Oturumlar));
             return RedirectToAction(tur + "ler");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> LogSil(int id)
+        {
+            var log = await _context.IslemLoglari.FindAsync(id);
+            if (log != null)
+            {
+                _context.IslemLoglari.Remove(log);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "İşlem logu başarıyla silindi.";
+            }
+            else
+            {
+                TempData["Error"] = "Silinmek istenen log bulunamadı.";
+            }
+            return RedirectToAction(nameof(Loglar));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TumLoglariTemizle()
+        {
+            try
+            {
+                _context.IslemLoglari.RemoveRange(_context.IslemLoglari);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Tüm işlem logları başarıyla temizlendi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Loglar temizlenirken bir hata oluştu: " + ex.Message;
+            }
+            return RedirectToAction(nameof(Loglar));
+        }
+
         // --- İŞLEM LOGLARI ---
         public async Task<IActionResult> Loglar()
         {
@@ -249,15 +378,102 @@ namespace ExamScheduler.Controllers
         {
             try
             {
-                string backupPath = "/var/opt/mssql/backup";
+                // Veritabanı sunucusunun işletim sistemini öğrenelim
+                var hostPlatform = "Windows";
+                try
+                {
+                    using (var command = _context.Database.GetDbConnection().CreateCommand())
+                    {
+                        command.CommandText = "SELECT host_platform FROM sys.dm_os_host_info";
+                        if (command.Connection.State != System.Data.ConnectionState.Open)
+                            await command.Connection.OpenAsync();
+                        var res = await command.ExecuteScalarAsync();
+                        if (res != null) hostPlatform = res.ToString();
+                    }
+                }
+                catch
+                {
+                    if (_context.Database.GetDbConnection().ConnectionString.Contains("Server=db", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hostPlatform = "Linux";
+                    }
+                }
+
+                string backupPath;
+                if (hostPlatform.Equals("Linux", StringComparison.OrdinalIgnoreCase))
+                {
+                    backupPath = "/var/opt/mssql/backup";
+                }
+                else
+                {
+                    backupPath = @"C:\Yedekler";
+                    if (!System.IO.Directory.Exists(backupPath))
+                    {
+                        System.IO.Directory.CreateDirectory(backupPath);
+                    }
+                }
+
                 await _context.Database.ExecuteSqlRawAsync("EXEC SP_YedekAl @p0", backupPath);
-                TempData["Success"] = "Veritabanı başarıyla yedeklendi. (Proje dizinindeki 'Yedekler' klasörüne kaydedildi)";
+                TempData["Success"] = $"Veritabanı başarıyla yedeklendi. Klasör: {backupPath}";
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Yedekleme sırasında bir hata oluştu: " + ex.Message;
             }
             return RedirectToAction("Index", "Home");
+        }
+
+        // --- MAZERET YÖNETİMİ ---
+        public async Task<IActionResult> Mazeretler(int personelId)
+        {
+            var personel = await _context.Personeller
+                .Include(p => p.Durumlar)
+                .FirstOrDefaultAsync(p => p.Id == personelId);
+                
+            if (personel == null) return NotFound();
+            
+            return View(personel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MazeretEkle(int PersonelId, DateTime Tarih, string MazeretTuru, bool Uygun)
+        {
+            // O gün görevi olan gözetmene o gün için mazeret girilmesini engelle
+            bool hasDuty = await _context.GozetmenAtamalari
+                .AnyAsync(ga => ga.PersonelId == PersonelId && ga.SinavSalonu.Sinav.Tarih.Date == Tarih.Date);
+
+            if (hasDuty)
+            {
+                TempData["Error"] = "Hata: Bu personelin belirtilen tarihte aktif sınav görevi bulunmaktadır. Görevi olan personele mazeret tanımlanamaz.";
+                return RedirectToAction(nameof(Mazeretler), new { personelId = PersonelId });
+            }
+
+            var durum = new PersonelDurum
+            {
+                PersonelId = PersonelId,
+                Tarih = Tarih,
+                MazeretTuru = MazeretTuru,
+                Uygun = Uygun
+            };
+            
+            _context.PersonelDurumlar.Add(durum);
+            await _context.SaveChangesAsync();
+            
+            TempData["Success"] = "Mazeret başarıyla eklendi.";
+            return RedirectToAction(nameof(Mazeretler), new { personelId = PersonelId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MazeretSil(int id, int personelId)
+        {
+            var durum = await _context.PersonelDurumlar.FindAsync(id);
+            if (durum != null)
+            {
+                _context.PersonelDurumlar.Remove(durum);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Mazeret silindi.";
+            }
+            return RedirectToAction(nameof(Mazeretler), new { personelId = personelId });
         }
     }
 }

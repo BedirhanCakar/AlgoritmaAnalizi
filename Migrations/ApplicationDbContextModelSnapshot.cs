@@ -98,6 +98,9 @@ namespace ExamScheduler.Migrations
                     b.Property<int>("Kapasite")
                         .HasColumnType("int");
 
+                    b.Property<int>("Kat")
+                        .HasColumnType("int");
+
                     b.Property<string>("Tip")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -181,6 +184,11 @@ namespace ExamScheduler.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Eposta")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
                     b.Property<string>("KullaniciAdi")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -197,6 +205,9 @@ namespace ExamScheduler.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Eposta")
+                        .IsUnique();
 
                     b.ToTable("Kullanicilar");
                 });

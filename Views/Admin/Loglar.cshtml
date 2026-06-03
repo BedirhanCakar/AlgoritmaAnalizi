@@ -6,8 +6,19 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Sistem İşlem Logları</h2>
-        <a href="javascript:history.back()" class="btn btn-outline-secondary">Geri Dön</a>
+        <div>
+            @if (Model.Any())
+            {
+                <form asp-action="TumLoglariTemizle" method="post" onsubmit="return confirm('Tüm logları silmek istediğinize emin misiniz?');" style="display:inline-block; margin-right: 10px;">
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash-fill"></i> Tüm Logları Temizle</button>
+                </form>
+            }
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">Geri Dön</a>
+        </div>
     </div>
+
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
 
     <div class="card shadow-sm">
         <div class="card-body p-0">
@@ -22,6 +33,7 @@
                             <th>Kayıt ID</th>
                             <th>Eski Değer</th>
                             <th>Yeni Değer</th>
+                            <th class="text-end">İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,6 +52,12 @@
                                 <td>@log.KayitId</td>
                                 <td class="text-muted small">@log.EskiDeger</td>
                                 <td class="text-success small">@log.YeniDeger</td>
+                                <td class="text-end">
+                                    <form asp-action="LogSil" method="post" onsubmit="return confirm('Bu log kaydını silmek istediğinize emin misiniz?');" style="display:inline;">
+                                        <input type="hidden" name="id" value="@log.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Sil</button>
+                                    </form>
+                                </td>
                             </tr>
                         }
                     </tbody>

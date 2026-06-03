@@ -75,11 +75,16 @@
                             <td class="fw-medium">@item.Ad @item.Soyad</td>
                             <td>@(item.Bolum?.Ad ?? "-")</td>
                             <td class="text-end">
-                                <form asp-action="Sil" method="post" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
-                                    <input type="hidden" name="tur" value="Personel" />
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Sil</button>
-                                </form>
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a asp-action="Mazeretler" asp-route-personelId="@item.Id" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-calendar-event"></i> Mazeretler
+                                    </a>
+                                    <form asp-action="Sil" method="post" onsubmit="return confirm('Silmek istediğinize emin misiniz?');" class="m-0">
+                                        <input type="hidden" name="tur" value="Personel" />
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Sil</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }

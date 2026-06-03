@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "E-posta Doğrulama Kodu";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0"><i class="bi bi-shield-lock-fill"></i> Güvenlik Doğrulaması</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-center text-muted">E-posta adresinize gönderilen 6 haneli doğrulama kodunu (OTP) giriniz.</p>
+                    
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger text-center">@TempData["Error"]</div>
+                    }
+                    @if (TempData["EmailMockCode"] != null)
+                    {
+                        <div class="alert alert-info text-center border-info">
+                            <strong>[Geliştirme Modu]</strong> Gönderilen Doğrulama Kodu: <strong class="fs-5 text-dark">@TempData["EmailMockCode"]</strong>
+                        </div>
+                    }
+
+                    <form asp-action="VerifyCode" method="post">
+                        <div class="mb-4">
+                            <label class="form-label d-block text-center fw-bold fs-5">Doğrulama Kodu</label>
+                            <input type="text" name="code" class="form-control text-center fs-3 fw-bold" 
+                                   required maxlength="6" pattern="^[0-9]{6}$" placeholder="******" autofocus autocomplete="off" 
+                                   style="letter-spacing: 0.5rem;" />
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Doğrula ve Giriş Yap</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4 mb-2">
+                        <span class="text-muted small"><i class="bi bi-clock-history"></i> Kalan Süre: </span>
+                        <span id="timer" class="fw-bold text-danger fs-5">03:00</span>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a asp-action="Login" class="text-decoration-none text-muted"><i class="bi bi-arrow-left"></i> Giriş Ekranına Dön</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var timerElement = document.getElementById("timer");
+        var duration = 180; // 3 dakika = 180 saniye
+        var interval = setInterval(function() {
+            var minutes = Math.floor(duration / 60);
+            var seconds = duration % 60;
+            
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            
+            timerElement.textContent = minutes + ":" + seconds;
+            
+            if (--duration < 0) {
+                clearInterval(interval);
+                timerElement.textContent = "Süre Doldu!";
+                var submitBtn = document.querySelector("button[type='submit']");
+                if (submitBtn) submitBtn.disabled = true;
+                alert("Doğrulama kodunun süresi doldu. Lütfen tekrar giriş yapın.");
+                window.location.href = '@Url.Action("Login")';
+            }
+        }, 1000);
+    </script>
+}

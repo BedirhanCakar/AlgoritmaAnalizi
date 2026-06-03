@@ -26,17 +26,21 @@
                   <input type="text" name="Ad" class="form-control" required />
               </div>
               <div class="row">
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-4 mb-3">
                       <label class="form-label">Kapasite</label>
                       <input type="number" name="Kapasite" class="form-control" min="1" required />
                   </div>
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-4 mb-3">
                       <label class="form-label">Tip</label>
                       <select name="Tip" class="form-select">
                           <option value="Sınıf">Sınıf</option>
                           <option value="Büyük Amfi">Büyük Amfi</option>
                           <option value="Lab">Lab</option>
                       </select>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                      <label class="form-label">Bulunduğu Kat</label>
+                      <input type="number" name="Kat" class="form-control" min="0" max="20" value="0" required />
                   </div>
               </div>
               <div class="mb-3 form-check">
@@ -65,6 +69,7 @@
                     <tr>
                         <th>Salon Adı</th>
                         <th>Kapasite</th>
+                        <th>Kat</th>
                         <th>Tip</th>
                         <th>Durum</th>
                         <th class="text-end">İşlemler</th>
@@ -76,6 +81,7 @@
                         <tr>
                             <td class="fw-medium">@item.Ad</td>
                             <td><i class="bi bi-people"></i> @item.Kapasite</td>
+                            <td>@(item.Kat == 0 ? "Zemin" : $"{item.Kat}. Kat")</td>
                             <td>@item.Tip</td>
                             <td>
                                 @if(item.Aktif) { <span class="badge bg-success">Aktif</span> }

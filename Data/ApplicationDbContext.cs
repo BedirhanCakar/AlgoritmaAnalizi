@@ -86,6 +86,10 @@ namespace ExamScheduler.Data
 
             modelBuilder.Entity<SinavSalonu>()
                 .ToTable(tb => tb.HasTrigger("TR_SinavSalonuKapasiteKontrol"));
+
+            modelBuilder.Entity<Kullanici>()
+                .HasIndex(u => u.Eposta)
+                .IsUnique();
         }
     }
 }

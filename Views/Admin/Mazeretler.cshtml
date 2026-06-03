@@ -1,0 +1,134 @@
+@model ExamScheduler.Models.Entities.Personel
+@{
+    ViewData["Title"] = $"{Model.Unvan} {Model.Ad} {Model.Soyad} - Mazeret Yönetimi";
+}
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-primary mb-1">
+            <i class="bi bi-calendar-event text-warning"></i> Personel Mazeret Yönetimi
+        </h2>
+        <p class="text-muted mb-0"><strong>@Model.Unvan @Model.Ad @Model.Soyad</strong> için izinli, mütalaa veya mazeretli günleri tanımlayın.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a asp-action="Personeller" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Personel Listesine Dön
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null) { <div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> @TempData["Success"]</div> }
+@if (TempData["Error"] != null) { <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div> }
+
+<div class="row">
+    <!-- Sol Taraf: Yeni Mazeret Ekle -->
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="card-title mb-0"><i class="bi bi-calendar-plus"></i> Yeni Mazeret Tanımla</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="MazeretEkle" method="post">
+                    <input type="hidden" name="PersonelId" value="@Model.Id" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tarih</label>
+                        <input type="date" name="Tarih" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mazeret Türü / Açıklama</label>
+                        <select name="MazeretTuru" class="form-select" required>
+                            <option value="Danışmanlık Saati">Danışmanlık Saati</option>
+                            <option value="İzinli">İzinli</option>
+                            <option value="Raporlu">Raporlu</option>
+                            <option value="Dış Görev">Dış Görev</option>
+                            <option value="Mazeretli">Mazeretli (Diğer)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Görev Alabilme Durumu</label>
+                        <select name="Uygun" class="form-select" required>
+                            <option value="false" selected>Gözetmenlik Yapamaz (Mazeretli)</option>
+                            <option value="true">Gözetmenlik Yapabilir (Müsait)</option>
+                        </select>
+                        <small class="text-muted d-block mt-1">
+                            <i class="bi bi-info-circle"></i> Genel gözetmen dağıtım havuzunda dikkate alınması için 'Gözetmenlik Yapamaz' seçilmelidir.
+                        </small>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-save"></i> Mazeret Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sağ Taraf: Mevcut Mazeretler Listesi -->
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="card-title mb-0"><i class="bi bi-list-task"></i> Tanımlı Mazeretler</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Mazeret Türü</th>
+                                <th>Durum</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Durumlar == null || !Model.Durumlar.Any())
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <i class="bi bi-calendar-check text-success mb-3" style="font-size: 3rem;"></i>
+                                        <p class="mb-0">Bu personele ait herhangi bir mazeret kaydı bulunmuyor.</p>
+                                        <small class="text-muted">Personel sınav tarihlerinde gözetmenlik için uygundur.</small>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var durum in Model.Durumlar.OrderBy(d => d.Tarih))
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@durum.Tarih.ToString("dd.MM.yyyy")</td>
+                                        <td>@durum.MazeretTuru</td>
+                                        <td>
+                                            @if (durum.Uygun)
+                                            {
+                                                <span class="badge bg-success"><i class="bi bi-check2"></i> Görev Alabilir</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger"><i class="bi bi-slash-circle"></i> Görev Alamaz</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <form asp-action="MazeretSil" method="post" onsubmit="return confirm('Bu mazeret kaydını silmek istediğinize emin misiniz?');">
+                                                <input type="hidden" name="id" value="@durum.Id" />
+                                                <input type="hidden" name="personelId" value="@Model.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i> Kaldır
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

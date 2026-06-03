@@ -11,6 +11,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Server=db;Database=ExamSchedulerDb;User Id=sa;Password=Your_Strong_Password_123!;TrustServerCertificate=True;
+      - Email__SmtpServer=${EMAIL_SMTP_SERVER}
+      - Email__Port=${EMAIL_PORT}
+      - Email__SenderEmail=${EMAIL_SENDER_EMAIL}
+      - Email__SenderPassword=${EMAIL_SENDER_PASSWORD}
+      - Email__EnableSsl=${EMAIL_ENABLE_SSL}
     depends_on:
       db:
         condition: service_healthy

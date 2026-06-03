@@ -14,5 +14,8 @@ namespace ExamScheduler.Models.Entities
 
         [Required, StringLength(50)]
         public string Rol { get; set; } // Admin veya Viewer
+
+        [Required, StringLength(150), EmailAddress]
+        public string Eposta { get; set; }
     }
 }
